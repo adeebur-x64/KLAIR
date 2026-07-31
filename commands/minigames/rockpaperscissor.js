@@ -25,7 +25,7 @@ module.exports = {
         const row = new ActionRowBuilder().addComponents(rock, paper, scissors);
 
         // Sending the initial reply
-        const response = await interaction.reply({ content: 'Rock Paper Scissors Shoot! Pick your move below, I\'ll pick mine:', components: [row], withResponse: true });
+        const response = await interaction.reply({ content: 'Rock Paper Scissors Shoot! I\'ve picked my move. Pick yours below, ', components: [row], withResponse: true });
 
         // Bot choosing its own move
         const options = ["rock", "paper", "scissors"];
