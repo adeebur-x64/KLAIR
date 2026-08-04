@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 
 module.exports = {
-    data: new SlashCommandBuilder().setName('headsortails').setDescription('Guess whether flipping the coin will land on heads or tails!'),
+    data: new SlashCommandBuilder().setName('coinflip').setDescription('Guess whether flipping the coin will land on heads or tails!'),
     async execute(interaction) {
 
         const heads = new ButtonBuilder()
