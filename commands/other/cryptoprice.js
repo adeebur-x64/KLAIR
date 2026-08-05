@@ -26,7 +26,7 @@ module.exports = {
 
             if (data[cryptoCurrency.toLowerCase()]) {
                 const price = data[cryptoCurrency.toLowerCase()].usd;
-                await interaction.editReply(`The current price of **${cryptoCurrency}** is **$${price}**`);
+                await interaction.editReply(`The current price of **${cryptoCurrency}** is **$${price}**.`);
             } else {
                 await interaction.editReply(`I couldn't find the price for **${cryptoCurrency}**. Maybe it's not a cryptocurrency?`);
             }
