@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MediaGalleryBuilder, MediaGalleryItem, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, MediaGalleryBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder().setName('cat').setDescription('Searches the internet to display a cat image!'),
