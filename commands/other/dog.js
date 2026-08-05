@@ -4,13 +4,13 @@ module.exports = {
     data: new SlashCommandBuilder().setName('dog').setDescription('Searches the internet to display a dog image!'),
     async execute(interaction) {
 
-        async function fetchCatImage() {
+        async function fetchDogImage() {
             try {
                 const response = await fetch('https://api.thedogapi.com/v1/images/search');
                 const data = await response.json();
 
-                const catImageURL = data[0].url;
-                return catImageURL;
+                const dogImageURL = data[0].url;
+                return dogImageURL;
             } catch {
                 await interaction.editReply(`NOOOO! I wasn't able to search for a dog image! I'm sorry!`)
             }
@@ -18,9 +18,9 @@ module.exports = {
 
         await interaction.reply('Searching the internet for some cute dog images!');
 
-        const imageURL = await fetchCatImage();
+        const imageURL = await fetchDogImage();
 
-        const catImage = new MediaGalleryBuilder().addItems(
+        const dogImage = new MediaGalleryBuilder().addItems(
             (MediaGalleryItem) =>
                 MediaGalleryItem
                     .setDescription('An image of a cute dog!')
@@ -36,7 +36,7 @@ module.exports = {
         await interaction.deleteReply();
 
         await interaction.followUp({
-            components: [catImage],
+            components: [dogImage],
             flags: MessageFlags.IsComponentsV2
         });
     },
