@@ -26,7 +26,7 @@ module.exports = {
             });
 
             // Updating the reply with the generated output of the AI Model.
-            await interaction.editReply(`**Question:** ${question}\n**Answer:** ${aiResponse.output_text}\n\n**-# Powered by ~/KLAIR AI. I can make mistakes! Always double check information before trusting it.**`);
+            await interaction.editReply(`Answer:** ${aiResponse.output_text}\n\n**-# Powered by ~/KLAIR AI. I can make mistakes! Always double check information before trusting it.**`);
         } catch (error) {
             console.error(error);
 

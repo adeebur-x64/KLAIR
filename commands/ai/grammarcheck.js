@@ -41,7 +41,7 @@ module.exports = {
             });
 
             // Updating the reply with the generated output of the AI Model.
-            await interaction.editReply(`**Sentence:** ${sentence}   **Desired Sentence Type:** ${sentenceType}\n\n**Grammar Corrected:** ${aiResponse.output_text}\n\n**-# Powered by ~/KLAIR AI. I can make mistakes! Always double check information before trusting it.**`);
+            await interaction.editReply(`**Grammar Corrected:** ${aiResponse.output_text}\n\n**-# Powered by ~/KLAIR AI. I can make mistakes! Always double check information before trusting it.**`);
         } catch (error) {
             console.error(error);
 
