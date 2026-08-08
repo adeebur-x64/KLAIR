@@ -29,7 +29,7 @@ module.exports = {
             });
 
             // Updating the reply with the generated output of the AI Model.
-            await interaction.editReply(`Answer:** ${aiResponse.output_text}\n\n**-# Powered by ~/KLAIR AI. I can make mistakes! Always double check information before trusting it.**`);
+            await interaction.editReply(`**Answer:** ${aiResponse.output_text}\n\n**-# Powered by ~/KLAIR AI. I can make mistakes! Always double check information before trusting it.**`);
         } catch (error) {
             // Error Handling: If the bot encountered an error while generating a response, edit the reply telling that.
             console.error(error);
