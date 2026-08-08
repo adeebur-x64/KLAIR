@@ -15,10 +15,13 @@ module.exports = {
         }
         activeSessions.set(interaction.guild.id, true);
 
+        // Intiailize the required variables
         let session = null;
         let fullTranscript = [];
         let isIntentionallyClosing = false;
         let forceEndSession = false;
+
+        // Create the buttons
         const startBtn = new ButtonBuilder()
             .setCustomId('start')
             .setLabel('Start the session!')
@@ -33,19 +36,23 @@ module.exports = {
 
         const consentRow = new ActionRowBuilder().addComponents(startBtn, cancelBtn);
 
+        // Send the initial reply
         await interaction.deferReply();
 
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
         await delay(200);
 
+        // Edit the reply with information that the user will need and add the buttons
         const response = await interaction.editReply({ content: `~/KLAIR will create a private voice channel for you that you can join under 3 minutes. Once created, you can talk with KLAIR and it'll respond back to you! You can join and leave the VC as many times as you'd like **with one condition: the channel will only be available for 3 minutes after you leave.**\n**NOTE: This deletion timer resets everytime you join the channel. So, if you leave, you'll have exactly 3 minutes to join back in!**\n\nThis message will get edited with the transcription of your conversation **AFTER** the session ends!`, components: [consentRow] });
 
+        // Create a collector to listen for button clicks
         const collectorFilter = (i) => i.user.id === interaction.user.id;
 
         try {
             const consent = await response.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
 
+            // Logic: If user clicks start, start the LiveAI Session
             if (consent.customId === 'start') {
                 let createdChannel = null;
                 try {
@@ -62,7 +69,7 @@ module.exports = {
                         content: `✅ LiveAI Session has been created! Join the Voice Channel and start talking with KLAIR!\n\n**IMPORTANT:** You can join and leave the VC as many times as you'd like with one condition: the channel will only be available for 3 minutes after you leave.\n\n**NOTE:** This deletion timer resets everytime you join the channel. So, if you leave, you'll have exactly 3 minutes to join back in!`,
                         components: [endBtnRow],
                     });
-                    
+
                     const replyMessage = await interaction.fetchReply();
                     const endCollector = replyMessage.createMessageComponentCollector({
                         filter: i => i.customId === 'end_session' && i.user.id === interaction.user.id,
@@ -71,7 +78,7 @@ module.exports = {
                     endCollector.on('collect', async i => {
                         forceEndSession = true;
                         endCollector.stop();
-                        try { await i.deferUpdate(); } catch (e) {}
+                        try { await i.deferUpdate(); } catch (e) { }
                     });
 
                     const channels = await interaction.guild.channels.fetch();
@@ -91,16 +98,19 @@ module.exports = {
                 }
 
             } else {
+                // Logic: If user clicks cancel, cancel the LiveAI Session
                 await consent.update({ content: `❌ LiveAI Session has been cancelled!`, components: [] })
                 activeSessions.delete(interaction.guild.id);
             }
 
         } catch (err) {
+            // Error Handling: If the bot encountered an error while generating a response, edit the reply telling that.
             console.error(err);
             await interaction.editReply({ content: 'You need to click the buttons to pick your choice! Run the command again to play!', components: [] });
             activeSessions.delete(interaction.guild.id);
         }
 
+        // Creating the function that handles creating a private voice channel for the user and the bot
         async function createVC(vcName) {
             await interaction.guild.channels.create({
                 name: vcName,
@@ -125,7 +135,7 @@ module.exports = {
                         ],
                     },
                     {
-                        // Allow the bot to access the voice channel
+                        // Allow the bot to ALSO access the voice channel
                         id: interaction.client.user.id,
                         allow: [
                             PermissionFlagsBits.ViewChannel,
@@ -137,16 +147,17 @@ module.exports = {
             });
         }
 
+        // Creating the function that handles the actual AI part of the LiveAI Feature
         async function startLiveAI(connection, player, userId) {
             const ai = new GoogleGenAI({ apiKey: aiAPIKey });
             const model = `gemini-3.1-flash-live-preview`;
-            const config = { responseModalities: [Modality.AUDIO] };
 
             // Stream for Gemini's output audio
             let audioOutStream = null;
 
             async function connectToGemini() {
                 try {
+                    // Initialize the Gemini Live Session
                     session = await ai.live.connect({
                         model: model,
                         callbacks: {
@@ -278,13 +289,13 @@ module.exports = {
 
                     const totalBuffer = Buffer.concat(audioChunks);
 
-                    // Ignore audio snippets shorter than 0.5 seconds (16,000 bytes)
+                    // Ignore audio snippets shorter than 0.5 seconds to prevent background noise being classified as inputs (16,000 bytes)
                     if (totalBuffer.length < 16000) {
                         console.log(`[LiveAI] Ignored short audio snippet (${totalBuffer.length} bytes, < 0.5s)`);
                         return;
                     }
 
-                    // 🎚️ Algorithmic Noise Gate: Calculate RMS (Root Mean Square) volume
+                    // Algorithmic Noise Gate: Calculate RMS (Root Mean Square) volume
                     let sum = 0;
                     const sampleCount = totalBuffer.length / 2;
                     for (let i = 0; i < totalBuffer.length; i += 2) {
@@ -301,8 +312,8 @@ module.exports = {
 
                     console.log(`[LiveAI] 🗣️ User stopped speaking. RMS: ${Math.round(rms)}. Sending ${totalBuffer.length} bytes of audio to Gemini Live!`);
 
-                    // We completely bypass sendRealtimeInput (which uses aggressive VAD) and explicitly upload 
-                    // the audio buffer as a complete Turn using sendClientContent. This guarantees transcription.
+                    // Bypass sendRealtimeInput (which uses aggressive VAD) and explicitly upload the audio buffer as a complete turn 
+                    // using sendClientContent. This guarantees transcription.
                     if (session) {
                         session.sendClientContent({
                             turns: [{
@@ -323,6 +334,7 @@ module.exports = {
             });
         };
 
+        // Creating the function that handles the bot joining and talking in the voice channel
         async function liveAI(vChannel) {
 
             const player = createAudioPlayer({
@@ -382,7 +394,7 @@ module.exports = {
                 player.stop();
                 await vChannel.delete();
 
-                let timeoutMessage = forceEndSession 
+                let timeoutMessage = forceEndSession
                     ? `**Session Ended!** You have manually ended the LiveAI session. I have deleted the channel for now.`
                     : `**Time's up!** It's been 3 minutes since you've left the voice channel. I have deleted the channel for now.`;
 
@@ -392,13 +404,13 @@ module.exports = {
                     flags: MessageFlags.Ephemeral,
                 })
 
-                // 📝 Show loading state
+                // Edit the reply with the generating summary message
                 await interaction.editReply({
                     content: `**✨ Thank you for using ~KLAIR Bot's LiveAI Feature!**\n\n*Generating session summary... ⏳*`,
                     components: [],
                 })
 
-                // 📝 Generate the transcript summary and attach to original reply
+                // Generate the transcript summary and edit reply with the summary attached
                 let finalSummaryText = '*No conversation data was recorded.*';
                 if (fullTranscript.length > 0) {
                     try {
@@ -417,15 +429,15 @@ module.exports = {
                 }
 
                 await interaction.editReply({
+                    // Sending the final reply with the summary
                     content: `**Summary:**\n${finalSummaryText}\n\n**✨ Thank you for using ~KLAIR Bot's LiveAI Feature!**`,
                     components: [],
                 })
 
+                // Deleting the active session
                 activeSessions.delete(interaction.guild.id);
             }
 
         }
-
-
     },
 };

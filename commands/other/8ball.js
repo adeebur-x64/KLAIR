@@ -14,6 +14,7 @@ module.exports = {
 
     async execute(interaction) {
 
+        // Creatng an array of responses
         const answers = [
             "Yep Definitely!",
             "Not at all!",
@@ -32,8 +33,10 @@ module.exports = {
             "Absolutely!"
         ]
 
+        // Generating the random response
         const botPrediction = answers[Math.floor(Math.random() * answers.length)];
 
+        // Sending the bot's "prediction"
         await interaction.reply(`Question: ${interaction.options.getString('question')}\nBot's Prediction: **${botPrediction}**`);
     },
 };

@@ -44,6 +44,7 @@ module.exports = {
 
         userGuessModal.addLabelComponents(userGuessLabel);
 
+        // Create a collector to listen for button clicks
         const collectorFilter = (i) => i.user.id === interaction.user.id;
 
         let gameActive = true;
@@ -68,6 +69,7 @@ module.exports = {
 
                     const userGuessStr = modalSubmit.fields.getTextInputValue('userGuess').trim();
 
+                    // Edge Case Handling: If user entered character that isn't a number
                     if (!/^\d+$/.test(userGuessStr)) {
                         await modalSubmit.reply({
                             content: "❌ Guess must be a whole number. Click **Guess** again to try.",
@@ -78,6 +80,7 @@ module.exports = {
 
                     const guessValue = parseInt(userGuessStr);
 
+                    // Edge Case Handling: If user entered a number outside the range
                     if (guessValue < 0 || guessValue > 100) {
                         await modalSubmit.reply({
                             content: "❌ Your guess must be between 0 and 100. Click **Guess** again to try.",
@@ -86,8 +89,9 @@ module.exports = {
                         continue;
                     }
 
-                    attempts++; // Increment attempts after a valid guess
+                    attempts++; // Increment the numbers of attempts after every valid attempt
 
+                    // Game Logic: Checking the user's guess
                     if (guessValue === botChoice) {
                         await modalSubmit.update({ content: `Woah! You guessed the number correctly! It was **${botChoice}**.\nNumber of attempts you did: **${attempts}**`, components: [] });
                         gameActive = false;
@@ -98,11 +102,12 @@ module.exports = {
                     }
 
                 } else if (selection.customId === 'giveup') {
+                    // End the game if user chooses to give up
                     await selection.update({ content: `Haha! I knew you would give up! The number I had selected was **${botChoice}**.\nNumber of attempts you did: **${attempts}**`, components: [] });
                     gameActive = false;
                 }
             } catch (error) {
-                // Component collector timed out
+                // Edit the reply if interaction collector timed out (60 seconds)
                 await interaction.editReply({ content: 'You need to click the buttons to pick your choice! Run the command again to play!', components: [] }).catch(() => { });
                 gameActive = false;
             }

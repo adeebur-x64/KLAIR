@@ -3,7 +3,8 @@ const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = re
 module.exports = {
     data: new SlashCommandBuilder().setName('rockpaperscissor').setDescription('Play Rock Paper Scissors with the bot!'),
     async execute(interaction) {
-        // Building the options
+
+        // Create the buttons
         const rock = new ButtonBuilder()
             .setCustomId('rock')
             .setLabel('Rock')
@@ -24,18 +25,20 @@ module.exports = {
 
         const row = new ActionRowBuilder().addComponents(rock, paper, scissors);
 
-        // Sending the initial reply
+        // Send the initial reply
         const response = await interaction.reply({ content: 'Rock Paper Scissors Shoot! I\'ve picked my move. Pick yours below, ', components: [row], withResponse: true });
 
         // Bot choosing its own move
         const options = ["rock", "paper", "scissors"];
         const botChoice = options[Math.floor(Math.random() * options.length)];
 
+        // Create a collector to listen for button clicks
         const collectorFilter = (i) => i.user.id === interaction.user.id;
 
         try {
             const selection = await response.resource.message.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
 
+            // Logic: If user clicks rock.
             if (selection.customId === 'rock') {
 
                 if (botChoice === 'paper') {
@@ -48,6 +51,7 @@ module.exports = {
 
             }
 
+            // Logic: If user clicks paper
             else if (selection.customId === 'paper') {
 
                 if (botChoice === 'rock') {
@@ -60,6 +64,7 @@ module.exports = {
 
             }
 
+            // Logic: If user clicks scissors
             else if (selection.customId === 'scissors') {
 
                 if (botChoice === 'rock') {
@@ -73,6 +78,7 @@ module.exports = {
             }
 
         } catch {
+            // Edit the reply if interaction collector timed out (60 seconds)
             await interaction.editReply({ content: 'You need to click the buttons to pick your choice! Run the command again to play!', components: [] });
         }
     },

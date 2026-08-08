@@ -48,6 +48,7 @@ client.on('messageCreate', async message => {
     }
 });
 
+// Set the bot's RPC and Status
 client.once('clientReady', () => {
     client.user.setPresence({
         activities: [{
